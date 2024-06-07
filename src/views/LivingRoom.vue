@@ -37,39 +37,41 @@ const devices = [
 </script>
 
 <template>
-  <base-header></base-header>
-  <div class="content">
-    <div class="room-info">
-      <div class="left-column">
-        <div class="temperature-humidity">
-          <div class="temperature">
-            <i class="fas fa-thermometer-half"></i> + 20 °C
+  <div class="main-content">
+    <base-header></base-header>
+    <div class="content">
+      <div class="room-info">
+        <div class="left-column">
+          <div class="temperature-humidity">
+            <div class="temperature">
+              <i class="fas fa-thermometer-half"></i> + 20 °C
+            </div>
+            <div class="humidity"><i class="fas fa-tint"></i> 30%</div>
           </div>
-          <div class="humidity"><i class="fas fa-tint"></i> 30%</div>
-        </div>
-        <div class="device-controls">
-          <device-comp
-            v-for="device in devices"
-            :key="device.name"
-            :name="device.name"
-            :status="device.status"
-            :activity="device.activity"
-            :icon="device.icon"
-          ></device-comp>
-        </div>
-      </div>
-      <div class="right-column">
-        <div class="schedule-energy">
-          <div class="schedule">
-            <span><i class="fas fa-clock"></i> Schedule</span>
-            <label for="schedule-from">From:</label>
-            <input type="time" id="schedule-from" value="17:55" />
-            <label for="schedule-to">To:</label>
-            <input type="time" id="schedule-to" value="22:55" />
+          <div class="device-controls">
+            <device-comp
+              v-for="device in devices"
+              :key="device.name"
+              :name="device.name"
+              :status="device.status"
+              :activity="device.activity"
+              :icon="device.icon"
+            ></device-comp>
           </div>
-          <div class="energy-saving">
-            <span><i class="fas fa-bolt"></i> Total energy saving: </span>
-            <span>45.6 KWH</span>
+        </div>
+        <div class="right-column">
+          <div class="schedule-energy">
+            <div class="schedule">
+              <span><i class="fas fa-clock"></i> Schedule</span>
+              <label for="schedule-from">From:</label>
+              <input type="time" id="schedule-from" value="17:55" />
+              <label for="schedule-to">To:</label>
+              <input type="time" id="schedule-to" value="22:55" />
+            </div>
+            <div class="energy-saving">
+              <span><i class="fas fa-bolt"></i> Total energy saving: </span>
+              <span>45.6 KWH</span>
+            </div>
           </div>
         </div>
       </div>

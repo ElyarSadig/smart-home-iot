@@ -2,9 +2,7 @@
 
 <template>
   <base-sidebar></base-sidebar>
-  <div class="main-content">
-    <router-view></router-view>
-  </div>
+  <router-view></router-view>
 </template>
 
 <style>
