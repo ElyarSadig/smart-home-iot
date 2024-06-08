@@ -2,7 +2,9 @@
 
 <template>
   <base-sidebar></base-sidebar>
-  <router-view></router-view>
+  <div class="main-content">
+    <router-view></router-view>
+  </div>
 </template>
 
 <style>
@@ -14,7 +16,7 @@ body {
   color: #ffffff;
 }
 .main-content {
-    margin-left: 250px;
-    padding: 20px;
+  margin-left: 250px;
+  padding: 20px;
 }
 </style>

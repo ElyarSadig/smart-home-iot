@@ -24,7 +24,7 @@ const buttonClass = computed(() => ({
 <style scoped>
 .device {
   background-color: #333;
-  padding: 20px;
+  padding: 15px;
   border-radius: 10px;
   text-align: center;
   display: flex;
