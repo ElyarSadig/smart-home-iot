@@ -27,10 +27,6 @@ const fetchRoomEnergySaving = async () => {
 
     previousEnergySaved.value = totalEnergySaved.value;
     totalEnergySaved.value = parseFloat(data.total_energy_saving);
-    chartData.value = data.daily_savings.map((saving, index) => ({
-      day: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index],
-      height: saving
-    }));
 
     hasValueChanged.value = totalEnergySaved.value !== previousEnergySaved.value;
   } catch (error) {
