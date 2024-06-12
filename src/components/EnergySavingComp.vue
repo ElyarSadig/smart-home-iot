@@ -1,3 +1,57 @@
+<script setup>
+import axios from "axios";
+import { ref, onMounted, computed, watch } from "vue";
+
+const totalEnergySaved = ref(0.0);
+const previousEnergySaved = ref(0.0);
+const hasValueChanged = ref(false);
+
+const chartData = ref([
+  { day: "Mon", height: 75 },
+  { day: "Tue", height: 60 },
+  { day: "Wed", height: 80 },
+  { day: "Thu", height: 50 },
+  { day: "Fri", height: 90 },
+  { day: "Sat", height: 65 },
+  { day: "Sun", height: 70 },
+]);
+
+const formattedEnergySaved = computed(() => {
+  return totalEnergySaved.value.toFixed(2);
+});
+
+const fetchRoomEnergySaving = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/room/energy-saving/1");
+    const data = response.data;
+
+    previousEnergySaved.value = totalEnergySaved.value;
+    totalEnergySaved.value = parseFloat(data.total_energy_saving);
+    chartData.value = data.daily_savings.map((saving, index) => ({
+      day: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index],
+      height: saving
+    }));
+
+    hasValueChanged.value = totalEnergySaved.value !== previousEnergySaved.value;
+  } catch (error) {
+    console.error("Error fetching energy saving:", error);
+  }
+};
+
+onMounted(() => {
+  fetchRoomEnergySaving();
+  setInterval(fetchRoomEnergySaving, 1000); // Fetch data every 1 second
+});
+
+watch(totalEnergySaved, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    hasValueChanged.value = true;
+    setTimeout(() => {
+      hasValueChanged.value = false;
+    }, 500);
+  }
+});
+</script>
 <template>
   <div class="energy-saving">
     <div class="energy-header">
@@ -8,114 +62,134 @@
     </div>
     <div class="energy-details">
       <div class="energy-amount">
-        <span>45.6</span> <span>KWH</span>
+        <span :class="{'animated-number': hasValueChanged}">{{ formattedEnergySaved }} KWH</span>
       </div>
       <div class="energy-chart">
-        <div class="chart-bar" v-for="bar in chartData" :key="bar.day" :style="{ height: bar.height + '%' }"></div>
+        <div
+          class="chart-bar"
+          v-for="(bar) in chartData"
+          :key="bar.day"
+          :style="{ height: bar.height + '%' }"
+        ></div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-const chartData = [
-  { day: 'Mon', height: 75 },
-  { day: 'Tue', height: 60 },
-  { day: 'Wed', height: 80 },
-  { day: 'Thu', height: 50 },
-  { day: 'Fri', height: 90 },
-  { day: 'Sat', height: 65 },
-  { day: 'Sun', height: 70 }
-];
-</script>
 
 <style scoped>
 .energy-saving {
-  background-color: #2a2a2a; /* Darker and more neutral background */
-  border-radius: 10px; /* Slightly smaller rounded corners */
-  padding: 10px; /* Less padding for a more compact look */
-  color: #ffffff; /* White text */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow */
-  display: flex; /* Flex layout */
-  flex-direction: column; /* Vertical stacking */
-  gap: 10px; /* Less gap for compactness */
-  transition: transform 0.2s ease-in-out, background 0.3s ease-in-out; /* Smooth transitions */
-  margin-top: 20px; /* Added margin for separation */
+  background-color: #2a2a2a;
+  border-radius: 10px;
+  padding: 10px;
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s ease-in-out, background 0.3s ease-in-out;
+  margin-top: 20px;
 }
 
 .energy-saving:hover {
-  transform: translateY(-3px); /* Subtle lift effect on hover */
-  background: linear-gradient(145deg, #2b2b2b 0%, #3a3a3a 100%); /* Subtle gradient on hover */
+  transform: translateY(-3px);
+  background: linear-gradient(145deg, #2b2b2b 0%, #3a3a3a 100%);
 }
 
 .energy-header {
-  display: flex; /* Flex layout */
-  justify-content: space-between; /* Space between title and date */
-  align-items: center; /* Center vertically */
-  border-bottom: 1px solid #444; /* Thin divider line */
-  padding-bottom: 8px; /* Less padding for compactness */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
 }
 
 .energy-title {
-  font-size: 16px; /* Slightly smaller font size */
-  font-weight: bold; /* Bold text */
-  color: #f1c75e; /* Light yellow for emphasis */
-  display: flex; /* Flex layout for icon */
-  align-items: center; /* Align items */
-  gap: 8px; /* Space between icon and text */
+  font-size: 16px;
+  font-weight: bold;
+  color: #f1c75e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .energy-title i {
-  font-size: 20px; /* Smaller icon size */
-  color: #f1c75e; /* Icon color */
+  font-size: 20px;
+  color: #f1c75e;
 }
 
 .energy-date {
-  font-size: 12px; /* Smaller font size */
-  color: #aaaaaa; /* Light gray for less emphasis */
+  font-size: 12px;
+  color: #aaaaaa;
 }
 
 .energy-details {
-  display: flex; /* Flex layout */
-  flex-direction: column; /* Vertical stacking */
-  align-items: center; /* Center content */
-  gap: 15px; /* Space between elements */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
 
 .energy-amount {
-  font-size: 36px; /* Smaller font size for compactness */
-  font-weight: bold; /* Bold text */
-  color: #f1c75e; /* Light yellow for emphasis */
-  display: flex; /* Flex layout */
-  align-items: baseline; /* Align baseline for unit */
-  gap: 4px; /* Less space between number and unit */
+  font-size: 36px;
+  font-weight: bold;
+  color: #f1c75e;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .energy-amount span:nth-child(2) {
-  font-size: 18px; /* Smaller unit font size */
-  color: #ffffff; /* White for unit */
+  font-size: 18px;
+  color: #ffffff;
 }
 
+/* Number Animation */
+.energy-amount .animated-number {
+  animation: pop-number 0.5s ease-in-out;
+}
+
+@keyframes pop-number {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Chart Animation */
 .energy-chart {
-  display: flex; /* Flex layout for bars */
-  gap: 4px; /* Less space between bars */
-  width: 100%; /* Full width */
-  height: 80px; /* Reduced height */
-  background: #444; /* Darker background for chart */
-  border-radius: 6px; /* Smaller rounded corners */
-  padding: 8px; /* Less padding inside chart */
-  box-sizing: border-box; /* Include padding in size */
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  height: 80px;
+  background: #444;
+  border-radius: 6px;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 .chart-bar {
-  flex: 1; /* Equal width for bars */
-  background: linear-gradient(135deg, #f1c75e 0%, #ffeb99 100%); /* Softer gradient */
-  border-radius: 4px; /* Smaller rounded corners */
-  transition: height 0.2s ease-in-out, background 0.3s ease-in-out; /* Smooth transitions */
+  flex: 1;
+  background: linear-gradient(135deg, #f1c75e 0%, #ffeb99 100%);
+  border-radius: 4px;
+  transition: height 0.5s ease-in-out;
+  animation: bounce-bar 0.8s ease-out; /* Bounce animation */
 }
 
-.chart-bar:hover {
-  background: linear-gradient(135deg, #ffeb99 0%, #f1c75e 100%); /* Inverse gradient on hover */
+@keyframes bounce-bar {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.1);
+  }
 }
 </style>
+
 
