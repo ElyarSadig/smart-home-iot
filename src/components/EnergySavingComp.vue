@@ -5,6 +5,7 @@ import { ref, onMounted, computed, watch } from "vue";
 const totalEnergySaved = ref(0.0);
 const previousEnergySaved = ref(0.0);
 const hasValueChanged = ref(false);
+const isLoading = ref(true);
 
 const chartData = ref([
   { day: "Mon", height: 75 },
@@ -22,13 +23,17 @@ const formattedEnergySaved = computed(() => {
 
 const fetchRoomEnergySaving = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/room/energy-saving/1");
+    const response = await axios.get(
+      "http://localhost:8080/room/energy-saving/1"
+    );
+    isLoading.value = false;
     const data = response.data;
 
     previousEnergySaved.value = totalEnergySaved.value;
     totalEnergySaved.value = parseFloat(data.total_energy_saving);
 
-    hasValueChanged.value = totalEnergySaved.value !== previousEnergySaved.value;
+    hasValueChanged.value =
+      totalEnergySaved.value !== previousEnergySaved.value;
   } catch (error) {
     console.error("Error fetching energy saving:", error);
   }
@@ -49,7 +54,7 @@ watch(totalEnergySaved, (newVal, oldVal) => {
 });
 </script>
 <template>
-  <div class="energy-saving">
+  <div class="energy-saving" v-if="!isLoading">
     <div class="energy-header">
       <span class="energy-title">
         <i class="fas fa-bolt"></i> Energy Savings
@@ -58,12 +63,14 @@ watch(totalEnergySaved, (newVal, oldVal) => {
     </div>
     <div class="energy-details">
       <div class="energy-amount">
-        <span :class="{'animated-number': hasValueChanged}">{{ formattedEnergySaved }} KWH</span>
+        <span :class="{ 'animated-number': hasValueChanged }"
+          >{{ formattedEnergySaved }} KWH</span
+        >
       </div>
       <div class="energy-chart">
         <div
           class="chart-bar"
-          v-for="(bar) in chartData"
+          v-for="bar in chartData"
           :key="bar.day"
           :style="{ height: bar.height + '%' }"
         ></div>
@@ -71,7 +78,6 @@ watch(totalEnergySaved, (newVal, oldVal) => {
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .energy-saving {
@@ -187,5 +193,3 @@ watch(totalEnergySaved, (newVal, oldVal) => {
   }
 }
 </style>
-
-

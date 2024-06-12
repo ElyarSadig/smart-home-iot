@@ -5,6 +5,8 @@ const frontDoorLocked = ref(false);
 const cameraActive = ref(false);
 const alarmActive = ref(false);
 
+const isLoading = ref(true);
+
 const doorStatus = computed(() => (frontDoorLocked.value ? "Locked" : "Open"));
 const cameraStatus = computed(() => (cameraActive.value ? "ON" : "OFF"));
 const alarmStatus = computed(() => (alarmActive.value ? "ON" : "OFF"));
@@ -20,6 +22,7 @@ const fetchSecurityData = async () => {
   try {
     const response = await axios.get("http://localhost:8080/room/1");
     const data = response.data;
+    isLoading.value = false;
 
     frontDoorLocked.value = data.is_front_door_locked;
     cameraActive.value = data.is_camera_active;
@@ -73,7 +76,7 @@ const sendUpdateRequest = async () => {
 </script>
 
 <template>
-  <div class="security-status">
+  <div class="security-status" v-if="!isLoading">
     <div class="security-header">
       <i class="fas fa-shield-alt"></i>
       <span>Security Status</span>

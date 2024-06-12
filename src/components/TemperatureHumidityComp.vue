@@ -5,6 +5,8 @@ import { ref, onMounted, computed, watch } from "vue";
 const temperature = ref(0.0);
 const humidity = ref(0.0);
 
+const isLoading = ref(true);
+
 const prevTemperature = ref(0.0);
 const prevHumidity = ref(0.0);
 
@@ -25,12 +27,16 @@ const tempStyle = computed(() => {
   const maxTemp = 45;
 
   // Calculate the intensity based on the temperature range
-  let intensity = Math.max(0, Math.min(100, ((temperature.value - minTemp) / (maxTemp - minTemp)) * 100));
+  let intensity = Math.max(
+    0,
+    Math.min(100, ((temperature.value - minTemp) / (maxTemp - minTemp)) * 100)
+  );
 
   // Determine the color based on the temperature value
-  let color = temperature.value >= 25 
-    ? `hsla(0, 100%, 50%, ${intensity / 100})`  // Redder for higher temperatures
-    : `hsla(210, 100%, 50%, ${(100 - intensity) / 100})`; // Bluer for lower temperatures
+  let color =
+    temperature.value >= 25
+      ? `hsla(0, 100%, 50%, ${intensity / 100})` // Redder for higher temperatures
+      : `hsla(210, 100%, 50%, ${(100 - intensity) / 100})`; // Bluer for lower temperatures
 
   return {
     background: color,
@@ -44,12 +50,16 @@ const humStyle = computed(() => {
   const maxHum = 50;
 
   // Calculate the intensity based on the humidity range
-  let intensity = Math.max(0, Math.min(100, ((humidity.value - minHum) / (maxHum - minHum)) * 100));
+  let intensity = Math.max(
+    0,
+    Math.min(100, ((humidity.value - minHum) / (maxHum - minHum)) * 100)
+  );
 
   // Determine the color based on the humidity value
-  let color = humidity.value >= 30 
-    ? `hsla(210, 100%, 50%, ${intensity / 100})`  // Bluer for higher humidity
-    : `hsla(0, 100%, 50%, ${(100 - intensity) / 100})`; // Redder for lower humidity
+  let color =
+    humidity.value >= 30
+      ? `hsla(210, 100%, 50%, ${intensity / 100})` // Bluer for higher humidity
+      : `hsla(0, 100%, 50%, ${(100 - intensity) / 100})`; // Redder for lower humidity
 
   return {
     background: color,
@@ -61,6 +71,7 @@ const fetchAirStatus = async () => {
   try {
     const response = await axios.get("http://localhost:8080/room/1");
     const data = response.data;
+    isLoading.value = false;
 
     prevTemperature.value = temperature.value;
     prevHumidity.value = humidity.value;
@@ -86,7 +97,8 @@ watch(temperature, (newVal, oldVal) => {
     setTimeout(() => {
       tempChanged.value = false;
     }, 1000);
-}});
+  }
+});
 
 watch(humidity, (newVal, oldVal) => {
   if (newVal !== oldVal) {
@@ -99,7 +111,7 @@ watch(humidity, (newVal, oldVal) => {
 </script>
 
 <template>
-  <div class="temperature-humidity">
+  <div class="temperature-humidity" v-if="!isLoading">
     <div
       class="temperature"
       :class="{ 'temp-updated': tempChanged }"
@@ -217,4 +229,3 @@ watch(humidity, (newVal, oldVal) => {
   animation: number-change 1s ease-in-out;
 }
 </style>
-

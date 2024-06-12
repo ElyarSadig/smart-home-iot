@@ -6,7 +6,8 @@ const props = defineProps(["id", "name", "icon"]);
 
 const id = toRef(props, "id");
 const name = toRef(props, "name");
-const is_active = ref(null);
+const is_active = ref(true);
+const isLoading = ref(true);
 
 const updated_at = ref(new Date());
 
@@ -49,6 +50,7 @@ const fetchDeviceStatus = async () => {
       `http://localhost:8080/device/${id.value}`
     );
     const data = response.data;
+    isLoading.value = false;
     is_active.value = data.is_active;
     updated_at.value = data.updated_at;
   } catch (error) {
@@ -82,28 +84,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <transition name="fade">
-    <div v-if="is_active" class="device" :class="status">
-      <i class="fas" :class="icon"></i>
-      <span class="device-name">{{ name }}</span>
-      <button :class="buttonClass" @click="updateDeviceStatus">
-        {{ status.toUpperCase() }}
-      </button>
-      <span class="device-status">{{ updated_at_formatted }}</span>
-    </div>
-  </transition>
+  <div v-if="!isLoading" class="device" :class="status">
+    <i class="fas" :class="icon"></i>
+    <span class="device-name">{{ name }}</span>
+    <button :class="buttonClass" @click="updateDeviceStatus">
+      {{ status.toUpperCase() }}
+    </button>
+    <span class="device-status">{{ updated_at_formatted }}</span>
+  </div>
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-
 .device {
   background-color: #333;
   padding: 15px;
