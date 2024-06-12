@@ -1,27 +1,109 @@
 <script setup>
-import { computed } from 'vue';
+import { ref, toRef, computed, onMounted } from "vue";
+import axios from "axios";
 
-const props = defineProps(["name", "status", "activity", "icon"]);
-const name = props.name;
-const status = props.status;
-const activity = props.activity;
+const props = defineProps(["id", "name", "icon"]);
+
+const id = toRef(props, "id");
+const name = toRef(props, "name");
+const is_active = ref(null);
+
+const updated_at = ref(new Date());
+
 const buttonClass = computed(() => ({
-  'on-button': status == "on",
-  'off-button': status == "off"
-})
-)
+  "on-button": is_active.value,
+  "off-button": !is_active.value,
+}));
+
+const status = computed(() => (is_active.value ? "on" : "off"));
+
+const updated_at_formatted = computed(() => {
+  if (!is_active.value) {
+    return "Inactive";
+  }
+
+  const now = new Date();
+  const updatedTime = new Date(updated_at.value);
+  const timeDiff = now - updatedTime; // Difference in milliseconds
+
+  // Calculate difference in hours and minutes
+  const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+  const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+  // Create formatted string based on hours and minutes
+  let formattedTime = "Active ";
+  if (hours > 0) {
+    formattedTime += `${hours} hour${hours > 1 ? "s" : ""} `;
+  } else if (minutes > 0) {
+    formattedTime += `${minutes} minute${minutes > 1 ? "s" : ""}`;
+  } else {
+    formattedTime += "less than a minute";
+  }
+
+  return formattedTime.trim();
+});
+
+const fetchDeviceStatus = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8080/device/${id.value}`
+    );
+    const data = response.data;
+    is_active.value = data.is_active;
+    updated_at.value = data.updated_at;
+  } catch (error) {
+    console.error("Error fetching device status:", error);
+  }
+};
+
+const updateDeviceStatus = async () => {
+  const newStatus = !is_active.value;
+
+  try {
+    await axios.put(`http://localhost:8080/device`, {
+      id: id.value,
+      active: newStatus,
+    });
+    const response = await axios.get(
+      `http://localhost:8080/device/${id.value}`
+    );
+    const data = response.data;
+    is_active.value = data.is_active;
+    updated_at.value = data.updated_at;
+  } catch (error) {
+    console.error("Error updating device status:", error);
+  }
+};
+
+onMounted(() => {
+  fetchDeviceStatus();
+  setInterval(fetchDeviceStatus, 30 * 1000);
+});
 </script>
 
 <template>
-  <div class="device" :class="status">
-    <i class="fas" :class="icon"></i>
-    <span class="device-name">{{ name }}</span>
-    <button :class="buttonClass">{{ status.toUpperCase() }}</button>
-    <span class="device-status">{{ activity }}</span>
-  </div>
+  <transition name="fade">
+    <div v-if="is_active" class="device" :class="status">
+      <i class="fas" :class="icon"></i>
+      <span class="device-name">{{ name }}</span>
+      <button :class="buttonClass" @click="updateDeviceStatus">
+        {{ status.toUpperCase() }}
+      </button>
+      <span class="device-status">{{ updated_at_formatted }}</span>
+    </div>
+  </transition>
 </template>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .device {
   background-color: #333;
   padding: 15px;

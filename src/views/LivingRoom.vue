@@ -6,34 +6,33 @@ import EnergySavingComp from "@/components/EnergySavingComp.vue";
 import TemperatureHumidityComp from "@/components/TemperatureHumidityComp.vue";
 const devices = [
   {
+    id: 1,
     name: "Smart Tv",
-    status: "on",
-    activity: "Active for 1 hour",
     icon: "fa-tv",
   },
   {
-    name: "Air Conditioner",
-    status: "on",
-    activity: "Active for 1 hour",
-    icon: "fa-snowflake",
-  },
-  { name: "Lights", status: "off", activity: "Inactive", icon: "fa-lightbulb" },
-  {
-    name: "Air Humidifier",
-    status: "on",
-    activity: "Active for 2 hours",
-    icon: "fa-water",
-  },
-  {
+    id: 2,
     name: "WiFi Router",
-    status: "on",
-    activity: "Active for 10 hours",
     icon: "fa-wifi",
   },
   {
+    id: 3,
+    name: "Air Conditioner",
+    icon: "fa-snowflake",
+  },
+  {
+    id: 4,
+    name: "Lights",
+    icon: "fa-lightbulb",
+  },
+  {
+    id: 5,
+    name: "Air Humidifier",
+    icon: "fa-water",
+  },
+  {
+    id: 6,
     name: "Speaker",
-    status: "off",
-    activity: "Inactive",
     icon: "fa-volume-up",
   },
 ];
@@ -48,10 +47,9 @@ const devices = [
         <div class="device-controls">
           <device-comp
             v-for="device in devices"
-            :key="device.name"
+            :key="device.id"
+            :id="device.id"
             :name="device.name"
-            :status="device.status"
-            :activity="device.activity"
             :icon="device.icon"
           ></device-comp>
         </div>
